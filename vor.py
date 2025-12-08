@@ -3,6 +3,16 @@ from manim_slides import Slide
 import numpy as np
 from scipy.spatial import Voronoi
 
+class Presentation(Slide):
+    def construct(self):
+        title = Title("Vororoi Diagram & Fortune's algorithm")
+        sub = Tex("by Romeu Esteve").next_to(title, DOWN)
+
+        self.play(Write(title), Write(sub))
+        self.next_slide()
+        self.play(FadeOut(title), FadeOut(sub)) 
+
+
 # --- SCENE 1: DEFINITIONS & PROPERTIES ---
 class VoronoiIntro(Slide):
     def construct(self):
@@ -461,79 +471,152 @@ class FortuneBasic(Slide):
 # --- SCENE 3: EVENTS (SITE & CIRCLE) ---
 class FortuneEvents(Slide):
     def construct(self):
-        title = Title("Algorithm Events")
+        # --- Helper: Parabola Function ---
+        def get_parabola_y(x, focus, directrix_y):
+            dist = focus[1] - directrix_y
+            if abs(dist) < 0.0001: return 100 # Avoid div/0, push to infinity
+            return ((x - focus[0])**2) / (2 * dist) + (focus[1] + directrix_y) / 2
+
+        # --- Helper: Circumcenter Calculation ---
+        def get_circumcenter(p1, p2, p3):
+            # Algorithm to find center of circle passing through 3 points
+            d = 2 * (p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1]) + p3[0] * (p1[1] - p2[1]))
+            if abs(d) < 0.001: return np.array([0,0,0]) # Collinear
+            ux = ((p1[0]**2 + p1[1]**2) * (p2[1] - p3[1]) + \
+                  (p2[0]**2 + p2[1]**2) * (p3[1] - p1[1]) + \
+                  (p3[0]**2 + p3[1]**2) * (p1[1] - p2[1])) / d
+            uy = ((p1[0]**2 + p1[1]**2) * (p3[0] - p2[0]) + \
+                  (p2[0]**2 + p2[1]**2) * (p1[0] - p3[0]) + \
+                  (p3[0]**2 + p3[1]**2) * (p2[0] - p1[0])) / d
+            return np.array([ux, uy, 0])
+
+        # ==========================================
+        # SCENE START
+        # ==========================================
+        title = Title("Fortune's Algorithm: The Events", include_underline=True)
+        self.play(Write(title))
+
+        # ------------------------------------------
+        # 1. SITE EVENT
+        # ------------------------------------------
+        # Text Setup
+        subtitle_site = Tex(r"\textbf{1. Site Event}: The sweep line hits a new site.", font_size=36, color=BLUE).next_to(title, DOWN)
+        desc_site = Tex(r"A new narrow parabola appears and splits the arc above it.", font_size=28).next_to(subtitle_site, DOWN)
         
-        # 1. Site Event
-        # -------------
-        event_text = Tex(r"\textbf{Site Event}: New arc splits an existing arc.", font_size=32).next_to(title, DOWN)
-        self.play(Write(title), Write(event_text))
+        self.play(FadeIn(subtitle_site, shift=UP), FadeIn(desc_site, shift=UP))
+        self.next_slide()
+
+        # Data
+        p_old = np.array([0, 1.0, 0])
+        p_new = np.array([0.5, -1.0, 0])
         
-        p_old = np.array([0, 2, 0])
-        p_new = np.array([0.5, 0, 0]) # Site that will appear
+        sweep_y = ValueTracker(0.75)
         
-        sweep_y = ValueTracker(1.0)
-        
-        # Setup visuals
+        # Objects
         dot_old = Dot(p_old, color=YELLOW)
-        dot_new = Dot(p_new, color=YELLOW, fill_opacity=0) # Invisible initially
+        dot_new = Dot(p_new, color=GREEN) # The new site
+        
+        # We start with dot_new hidden or outlined
+        dot_new_ring = Circle(radius=0.15, color=GREEN).move_to(p_new)
+        
         sweep_line = always_redraw(lambda: Line(LEFT*7, RIGHT*7, color=RED).set_y(sweep_y.get_value()))
         
-        def get_para(f, y): return lambda x: ((x - f[0])**2) / (2 * (f[1] - y)) + (f[1] + y) / 2
-        
-        # We only draw the beach line logic here for simplicity
-        beach_env = always_redraw(lambda: FunctionGraph(
-            lambda x: min(get_para(p_old, sweep_y.get_value())(x), 
-                          get_para(p_new, sweep_y.get_value())(x) if sweep_y.get_value() < 0 else 100),
-            x_range=[-4,4], color=YELLOW
+        # Beach Line logic with "Existence check" for the second parabola
+        beach_line_site = always_redraw(lambda: FunctionGraph(
+            lambda x: min(
+                get_parabola_y(x, p_old, sweep_y.get_value()),
+                # Only include second parabola if sweep line is below the site
+                get_parabola_y(x, p_new, sweep_y.get_value()) if sweep_y.get_value() < p_new[1] - 0.01 else 100
+            ),
+            x_range=[-6,6], color=YELLOW, stroke_width=4
         ))
 
-        self.play(Create(dot_old), Create(sweep_line), Create(beach_env))
+        self.play(Create(dot_old), Create(dot_new_ring), Create(sweep_line), Create(beach_line_site))
         
-        # Sweep down until just before p_new
-        self.play(sweep_y.animate.set_value(0.1), run_time=1.5)
+        # Animate Sweep to just before the site
+        self.play(sweep_y.animate.set_value(-1.01), run_time=1.5)
         
-        # Trigger Site Event
-        self.play(dot_new.animate.set_fill(opacity=1), run_time=0.2)
-        self.play(sweep_y.animate.set_value(-2), run_time=3)
+        # THE EVENT HAPPENS
+        self.play(
+            ReplacementTransform(dot_new_ring, dot_new),
+            Flash(p_new, color=GREEN, flash_radius=0.5)
+        )
+        
+        # Continue Sweep (Parabola emerges)
+        self.play(sweep_y.animate.set_value(-1.5), run_time=3)
+        
         self.next_slide()
 
-        # 2. Circle Event
-        # ---------------
-        self.play(FadeOut(Group(dot_old, dot_new, sweep_line, beach_env, event_text)))
+        # ------------------------------------------
+        # 2. CIRCLE EVENT
+        # ------------------------------------------
+        # Cleanup
+        self.play(
+            FadeOut(Group(subtitle_site, desc_site, dot_old, dot_new, beach_line_site)),
+            sweep_y.animate.set_value(2.5) # Reset sweep line upwards
+        )
         
-        circle_text = Tex(r"\textbf{Circle Event}: Arcs converge, creating a Voronoi Vertex.", font_size=32).next_to(title, DOWN)
-        self.play(Write(circle_text))
+        subtitle_circ = Tex(r"\textbf{2. Circle Event}: An arc disappears.", font_size=36, color=BLUE).next_to(title, DOWN)
+        desc_circ = Tex(r"Occurs when the sweep line is tangent to the circle formed by 3 sites.", font_size=28).next_to(subtitle_circ, DOWN)
         
-        # Three sites arranged to cause a collapse
-        s1 = np.array([-2, 1, 0])
-        s2 = np.array([2, 1, 0])
-        s3 = np.array([0, -1, 0]) # Lower down
-        dots = VGroup(Dot(s1), Dot(s2), Dot(s3))
+        self.play(Write(subtitle_circ), Write(desc_circ))
+
+        # Data for 3 sites that form a nice triangle
+        s1 = np.array([-2, 0.5, 0])
+        s2 = np.array([2, 0.5, 0])
+        s3 = np.array([0, -1.0, 0])
         
-        sweep_y.set_value(0.5)
+        sites_group = VGroup(Dot(s1), Dot(s2), Dot(s3)).set_color(ORANGE)
+        
+        # Math: Calculate exact event location
+        center = get_circumcenter(s1, s2, s3)
+        radius = np.linalg.norm(s1 - center)
+        event_y = center[1] - radius # Bottom of the circle
         
         # Redefine beach line for 3 sites
-        def beach_3(x):
-            y = sweep_y.get_value()
-            v1 = get_para(s1, y)(x)
-            v2 = get_para(s2, y)(x)
-            v3 = get_para(s3, y)(x)
-            return min(v1, v2, v3)
+        beach_line_circ = always_redraw(lambda: FunctionGraph(
+            lambda x: min(
+                get_parabola_y(x, s1, sweep_y.get_value()),
+                get_parabola_y(x, s2, sweep_y.get_value()),
+                get_parabola_y(x, s3, sweep_y.get_value())
+            ),
+            x_range=[-6,6], color=YELLOW
+        ))
 
-        beach_line_3 = always_redraw(lambda: FunctionGraph(beach_3, x_range=[-5,5], color=YELLOW))
+        self.play(Create(sites_group), Create(beach_line_circ))
+
+        # Sweep down to near the event
+        self.play(sweep_y.animate.set_value(event_y + 0.5), run_time=2)
         
-        self.play(Create(dots), Create(sweep_line), Create(beach_line_3))
+        # Show the "Ghost Circle" to explain why it happens here
+        ghost_circle = DashedVMobject(Circle(radius=radius, color=BLUE_B).move_to(center))
+        vertex_dot = Dot(center, color=RED)
+        vertex_label = Text("Voronoi Vertex", font_size=20, color=RED).next_to(vertex_dot, UP)
+
+        self.play(Create(ghost_circle))
         
-        # Animate sweep past the circle event
-        self.play(sweep_y.animate.set_value(-3), run_time=5)
+        # Animate to exact event moment
+        self.play(
+            sweep_y.animate.set_value(event_y), 
+            run_time=2, 
+            rate_func=linear
+        )
         
-        # Highlight the vertex (approximate location for visual)
-        vertex = Dot([0, 0.25, 0], color=ORANGE, radius=0.15)
-        vertex_label = Text("Vertex", font_size=20, color=ORANGE).next_to(vertex, UP)
-        self.play(FadeIn(vertex), FadeIn(vertex_label))
+        # Mark the vertex
+        self.play(FadeIn(vertex_dot), FadeIn(vertex_label), Flash(center, color=RED))
+        
+        # Continue past event (Arc disappears)
+        self.play(sweep_y.animate.set_value(event_y - 1.5), run_time=2)
         
         self.next_slide()
+
+        # ------------------------------------------
+        # 3. CONCLUSION
+        # ------------------------------------------
+        self.play(FadeOut(Group(sites_group, beach_line_circ, ghost_circle, vertex_dot, vertex_label, sweep_line, subtitle_circ, desc_circ)))
         
-        # 3. Complexity Summary
-        self.play(FadeOut(Group(dots, sweep_line, beach_line_3, circle_text, vertex, vertex_label, title)))
-        self.wait(2)
+        final_text = Tex(r"Site Events $\rightarrow$ Create Arcs \\ Circle Events $\rightarrow$ Delete Arcs", font_size=40)
+        self.play(Write(final_text))
+        
+        self.wait()
+        self.play(FadeOut(final_text), FadeOut(title))
