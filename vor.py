@@ -5,7 +5,7 @@ from scipy.spatial import Voronoi
 
 class Presentation(Slide):
     def construct(self):
-        title = Title("Vororoi Diagram & Fortune's algorithm")
+        title = Title("Vororoi Diagram and Fortune's algorithm")
         sub = Tex("by Romeu Esteve").next_to(title, DOWN)
 
         self.play(Write(title), Write(sub))
