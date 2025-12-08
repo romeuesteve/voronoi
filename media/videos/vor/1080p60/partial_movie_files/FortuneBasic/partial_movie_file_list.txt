@@ -1,0 +1,6 @@
+# This file is used internally by FFMPEG.
+file 'file:/home/romeu/upc/geoc/voronoi/media/videos/vor/1080p60/partial_movie_files/FortuneBasic/3544663784_3514792525_223132457.mp4'
+file 'file:/home/romeu/upc/geoc/voronoi/media/videos/vor/1080p60/partial_movie_files/FortuneBasic/260329756_4030496765_47515107.mp4'
+file 'file:/home/romeu/upc/geoc/voronoi/media/videos/vor/1080p60/partial_movie_files/FortuneBasic/260329756_1979945487_1078034892.mp4'
+file 'file:/home/romeu/upc/geoc/voronoi/media/videos/vor/1080p60/partial_movie_files/FortuneBasic/260329756_742348529_1454425744.mp4'
+file 'file:/home/romeu/upc/geoc/voronoi/media/videos/vor/1080p60/partial_movie_files/FortuneBasic/260329756_1473347219_1969239702.mp4'

@@ -1,0 +1,69 @@
+{
+  "slides": [
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/VoronoiIntro/14c7efa09350091169f93896c1e637b17e9d5975289d1e2259c2fd289124e491.mp4",
+      "rev_file": "slides/files/VoronoiIntro/14c7efa09350091169f93896c1e637b17e9d5975289d1e2259c2fd289124e491_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/VoronoiIntro/c17300f143c2fe802af1111135bbde0b08861c9eb3a17da2f3c2e943b8cba4f6.mp4",
+      "rev_file": "slides/files/VoronoiIntro/c17300f143c2fe802af1111135bbde0b08861c9eb3a17da2f3c2e943b8cba4f6_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/VoronoiIntro/5ae421270fda26580c60673dc49bde1a2fb4fbeb3244dc4d9143ec030a4198ef.mp4",
+      "rev_file": "slides/files/VoronoiIntro/5ae421270fda26580c60673dc49bde1a2fb4fbeb3244dc4d9143ec030a4198ef_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/VoronoiIntro/b9319b5438b6af5ee4339831397f6e7f8cb8f967aeefecbdaf9398e39d7bb0c1.mp4",
+      "rev_file": "slides/files/VoronoiIntro/b9319b5438b6af5ee4339831397f6e7f8cb8f967aeefecbdaf9398e39d7bb0c1_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/VoronoiIntro/4d44c54138d7bd493d22e42eb6a609877a5b03afc91d35e864711bfc4885b245.mp4",
+      "rev_file": "slides/files/VoronoiIntro/4d44c54138d7bd493d22e42eb6a609877a5b03afc91d35e864711bfc4885b245_reversed.mp4"
+    }
+  ],
+  "resolution": [
+    1920,
+    1080
+  ],
+  "background_color": "black"
+}

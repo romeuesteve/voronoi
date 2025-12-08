@@ -1,0 +1,45 @@
+{
+  "slides": [
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/FortuneEvents/0f40950e9a618654c92a8130d63ec6f878523914df6cd1e8ef8ca2867a737d4f.mp4",
+      "rev_file": "slides/files/FortuneEvents/0f40950e9a618654c92a8130d63ec6f878523914df6cd1e8ef8ca2867a737d4f_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/FortuneEvents/dcdbbb406d05889a3e7f04f2566ae64019c08ee085556cea86e7f4776d9b5ec8.mp4",
+      "rev_file": "slides/files/FortuneEvents/dcdbbb406d05889a3e7f04f2566ae64019c08ee085556cea86e7f4776d9b5ec8_reversed.mp4"
+    },
+    {
+      "loop": false,
+      "auto_next": false,
+      "playback_rate": 1.0,
+      "reversed_playback_rate": 1.0,
+      "notes": "",
+      "dedent_notes": true,
+      "skip_animations": false,
+      "src": null,
+      "file": "slides/files/FortuneEvents/72983ce86b6b96de23912b4845dccd010f87b126f1c96e3d15347f03837de979.mp4",
+      "rev_file": "slides/files/FortuneEvents/72983ce86b6b96de23912b4845dccd010f87b126f1c96e3d15347f03837de979_reversed.mp4"
+    }
+  ],
+  "resolution": [
+    1920,
+    1080
+  ],
+  "background_color": "black"
+}

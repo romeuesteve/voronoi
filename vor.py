@@ -3,7 +3,7 @@ from manim_slides import Slide
 import numpy as np
 from scipy.spatial import Voronoi
 
-# --- SCENE 1: DEFINITIONS & PROPERTIES (FIXED) ---
+# --- SCENE 1: DEFINITIONS & PROPERTIES ---
 class VoronoiIntro(Slide):
     def construct(self):
         # 1. Title & Definition
@@ -62,7 +62,7 @@ class VoronoiIntro(Slide):
                 v1 = vor.vertices[v_pair[1]]
                 voronoi_lines.add(Line([v0[0], v0[1], 0], [v1[0], v1[1], 0], color=BLUE, stroke_width=4))
 
-        # Draw Infinite ridges (FIXED: ensured element-wise addition with NumPy arrays)
+        # Draw Infinite ridges
         center_mass = vor.points.mean(axis=0)
         for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
             v_pair = simplex
@@ -75,13 +75,11 @@ class VoronoiIntro(Slide):
                 normal /= np.linalg.norm(normal)
                 if np.dot(normal, v0 - center_mass) < 0: normal = -normal
                 
-                # --- FIX Applied Here ---
                 start_point = np.array([v0[0],v0[1],0])
                 # Use np.array for the addition to ensure element-wise operation (not list concatenation)
                 direction_vector = np.array([normal[0]*10, normal[1]*10, 0]) 
                 end_point = start_point + direction_vector
                 voronoi_lines.add(Line(start_point, end_point, color=BLUE, stroke_width=4))
-                # --- End Fix ---
 
         prop_text = Tex(
             r"Each cell $V(p_i)$ is a \textbf{Convex Polygon}.",
@@ -238,16 +236,5 @@ class FortuneEvents(Slide):
         self.next_slide()
         
         # 3. Complexity Summary
-        self.play(FadeOut(Group(dots, sweep_line, beach_line_3, circle_text, vertex, vertex_label)))
-        
-        final_title = Title("Complexity & Summary")
-        bullets = VGroup(
-            Tex(r"$\bullet$ Naive Construction: $O(n^2)$", font_size=36),
-            Tex(r"$\bullet$ Fortune's Algorithm: $O(n \log n)$", font_size=36),
-            Tex(r"$\bullet$ Space Complexity: $O(n)$", font_size=36),
-            Tex(r"$\bullet$ Events: $O(n)$ site/circle events processed in $O(\log n)$", font_size=36),
-        ).arrange(DOWN, aligned_edge=LEFT).next_to(final_title, DOWN)
-        
-        self.play(Write(final_title))
-        self.play(LaggedStart(*[Write(b) for b in bullets], lag_ratio=0.5))
+        self.play(FadeOut(Group(dots, sweep_line, beach_line_3, circle_text, vertex, vertex_label, title)))
         self.wait(2)
