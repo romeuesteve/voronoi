@@ -6,114 +6,177 @@ from scipy.spatial import Voronoi
 # --- SCENE 1: DEFINITIONS & PROPERTIES ---
 class VoronoiIntro(Slide):
     def construct(self):
-        # 1. Title & Definition
-        title = Title("Voronoi Diagrams")
+        # --- 1. Title & Definition ---
+        title = Title("Voronoi Construction")
         def_text = Tex(
-            r"Partitions the plane so each site's region (cell) contains \\ all points closer to it than to any other.",
+            r"For each site, we find the region closest to it\\by intersecting \textbf{perpendicular bisectors}.",
             font_size=32
         ).next_to(title, DOWN)
-        
-        sites = [np.array(p) for p in [[-3, -1, 0], [-1, 2, 0], [2, 1, 0], [3, -2, 0], [0, 0, 0]]]
-        site_dots = VGroup(*[Dot(p, color=YELLOW, radius=0.1) for p in sites])
-        
+
         self.play(Write(title), Write(def_text))
+        self.next_slide()
+
+        self.play(FadeOut(title), FadeOut(def_text))
+
+        
+        # Define sites
+        sites_coords = [[-3, -1, 0], [-1, 2, 0], [2, 1, 0], [3, -2, 0], [0, 0, 0]]
+        sites = [np.array(p) for p in sites_coords]
+        site_dots = VGroup(*[Dot(p, color=YELLOW, radius=0.08) for p in sites])
+        
+        # Calculate Voronoi
+        points_2d = [p[:2] for p in sites]
+        vor = Voronoi(points_2d)
+
+        
         self.play(LaggedStart(*[GrowFromCenter(d) for d in site_dots], lag_ratio=0.1))
         self.next_slide()
 
-        # 2. Construction by Bisectors
-        self.play(FadeOut(def_text))
-        bisector_text = Tex(
-            r"Boundaries are \textbf{perpendicular bisectors} between sites.",
-            font_size=32
-        ).to_edge(DOWN)
+        # --- 2. Construct Regions Iteratively ---
         
-        # Demo specific bisector
-        p1, p2 = sites[4], sites[2]
-        line_connect = Line(p1, p2, color=GRAY, stroke_opacity=0.5)
-        mid = (p1+p2)/2
-        v = p2-p1
-        
-        # Calculate normal vector (perpendicular to v) and normalize
-        normal_dir = np.array([-v[1], v[0], 0], dtype=float)
-        normal_dir /= np.linalg.norm(normal_dir) 
-        
-        # Scale for better visibility (Line of length 14 units)
-        scale = 7 
-        start_point = mid - normal_dir * scale
-        end_point = mid + normal_dir * scale
+        # Store all final edges to keep them on screen
+        final_diagram = VGroup() 
 
-        bisector = Line(start_point, end_point, color=BLUE)
-        
-        self.play(Write(bisector_text))
-        self.play(Create(line_connect), Create(bisector))
-        self.next_slide()
-        
-        self.play(FadeOut(line_connect), FadeOut(bisector), FadeOut(bisector_text))
-
-        # 3. Full Diagram & Convexity
-        points_2d = [p[:2] for p in sites]
-        vor = Voronoi(points_2d)
-        voronoi_lines = VGroup()
-        
-        # Draw Finite ridges
-        for v_pair in vor.ridge_vertices:
-            if v_pair[0] >= 0 and v_pair[1] >= 0:
-                v0 = vor.vertices[v_pair[0]]
-                v1 = vor.vertices[v_pair[1]]
-                voronoi_lines.add(Line([v0[0], v0[1], 0], [v1[0], v1[1], 0], color=BLUE, stroke_width=4))
-
-        # Draw Infinite ridges
+        # We need a center of mass to determine direction of infinite ridges correctly
         center_mass = vor.points.mean(axis=0)
-        for pointidx, simplex in zip(vor.ridge_points, vor.ridge_vertices):
-            v_pair = simplex
-            if v_pair[0] < 0 or v_pair[1] < 0:
-                i = v_pair[0] if v_pair[0] >= 0 else v_pair[1]
-                v0 = vor.vertices[i]
-                p0, p1 = vor.points[pointidx[0]], vor.points[pointidx[1]]
-                tangent = p1 - p0
+
+        # Loop through every site to construct its cell
+        for i, site in enumerate(sites):
+            
+            # 1. Highlight current site
+            current_dot = site_dots[i]
+            self.play(current_dot.animate.set_color(RED).scale(1.5), run_time=0.3)
+            
+            construction_lines = VGroup()
+            cell_edges = VGroup()
+            neighbor_lines = VGroup()
+
+            # Find ridges (edges) associated with this specific point index 'i'
+            # vor.ridge_points is a list of pairs [p1, p2]
+            relevant_ridges_indices = []
+            for ridge_idx, point_pair in enumerate(vor.ridge_points):
+                if i in point_pair:
+                    relevant_ridges_indices.append(ridge_idx)
+
+            # Process each neighbor/ridge for this cell
+            for ridge_idx in relevant_ridges_indices:
+                point_pair = vor.ridge_points[ridge_idx]
+                
+                # Identify neighbor
+                neighbor_idx = point_pair[1] if point_pair[0] == i else point_pair[0]
+                neighbor_pos = sites[neighbor_idx]
+                
+                # Create visual line to neighbor
+                n_line = DashedLine(site, neighbor_pos, color=GRAY, stroke_opacity=0.5)
+                neighbor_lines.add(n_line)
+
+                # --- Calculate Bisector Geometry ---
+                p0_2d = vor.points[point_pair[0]]
+                p1_2d = vor.points[point_pair[1]]
+                tangent = p1_2d - p0_2d
+                # Normal vector
                 normal = np.array([-tangent[1], tangent[0]])
                 normal /= np.linalg.norm(normal)
-                if np.dot(normal, v0 - center_mass) < 0: normal = -normal
                 
-                start_point = np.array([v0[0],v0[1],0])
-                # Use np.array for the addition to ensure element-wise operation (not list concatenation)
-                direction_vector = np.array([normal[0]*10, normal[1]*10, 0]) 
-                end_point = start_point + direction_vector
-                voronoi_lines.add(Line(start_point, end_point, color=BLUE, stroke_width=4))
+                midpoint_2d = (p0_2d + p1_2d) / 2
+                midpoint = np.array([midpoint_2d[0], midpoint_2d[1], 0])
 
-        prop_text = Tex(
-            r"Each cell $V(p_i)$ is a \textbf{Convex Polygon}.",
-            font_size=32
-        ).to_edge(DOWN)
-        
-        self.play(Create(voronoi_lines), run_time=2)
-        self.play(Write(prop_text))
-        
-        # Highlight Center Cell
-        center_region = vor.regions[vor.point_region[4]]
-        poly_points = [np.array([vor.vertices[i][0], vor.vertices[i][1], 0]) for i in center_region if i != -1]
-        highlight = Polygon(*poly_points, color=BLUE, fill_opacity=0.3, stroke_width=0)
-        
-        self.play(FadeIn(highlight))
-        self.next_slide()
+                # Draw Infinite Bisector (The "Construction" line)
+                # We make it very long to simulate infinity
+                bisector_direction = np.array([normal[0], normal[1], 0])
+                start_inf = midpoint - bisector_direction * 10
+                end_inf = midpoint + bisector_direction * 10
+                inf_line = Line(start_inf, end_inf, color=ORANGE, stroke_width=2, stroke_opacity=0.5)
+                construction_lines.add(inf_line)
 
-        # 4. Duality (Delaunay)
-        self.play(FadeOut(prop_text), FadeOut(highlight))
-        dual_text = Tex(
-            r"The \textbf{Delaunay Triangulation} is the dual graph.",
-            font_size=32
-        ).to_edge(DOWN)
-        
-        delaunay_lines = VGroup()
-        for pair in vor.ridge_points:
-            delaunay_lines.add(Line(sites[pair[0]], sites[pair[1]], color=ORANGE, stroke_opacity=0.8))
+                # --- Calculate Finite Edge (The Final Result) ---
+                # Check vertex indices for this ridge
+                v_pair = vor.ridge_vertices[ridge_idx]
+                
+                start_pos, end_pos = None, None
+
+                # Case A: Finite Ridge (bounded by two vertices)
+                if v_pair[0] >= 0 and v_pair[1] >= 0:
+                    v0 = vor.vertices[v_pair[0]]
+                    v1 = vor.vertices[v_pair[1]]
+                    start_pos = np.array([v0[0], v0[1], 0])
+                    end_pos = np.array([v1[0], v1[1], 0])
+                
+                # Case B: Infinite Ridge (bounded by one vertex, goes to infinity)
+                else:
+                    # Get the known vertex
+                    known_v_idx = v_pair[0] if v_pair[0] >= 0 else v_pair[1]
+                    v0 = vor.vertices[known_v_idx]
+                    start_pos = np.array([v0[0], v0[1], 0])
+                    
+                    # Determine direction for the infinite part
+                    # Check dot product with vector from center to ensure it points outwards
+                    if np.dot(normal, v0 - center_mass) < 0:
+                        normal = -normal
+                    
+                    direction = np.array([normal[0], normal[1], 0])
+                    end_pos = start_pos + direction * 10
+
+                edge = Line(start_pos, end_pos, color=BLUE, stroke_width=4)
+                cell_edges.add(edge)
+
+            # --- Animation Sequence for this Cell ---
             
-        self.play(Write(dual_text))
-        self.play(voronoi_lines.animate.set_stroke(opacity=0.2), Create(delaunay_lines))
+            # 1. Show neighbors and infinite bisectors
+            if (i == 0):
+                self.play(Create(neighbor_lines))
+                self.next_slide()
+                self.play(Create(construction_lines))
+                self.next_slide()
+            else:
+                self.play(
+                    Create(neighbor_lines),
+                    Create(construction_lines),
+                    run_time=0.7
+                )
+            
+            
+
+            # 2. "Cut" the bisectors into the cell edges
+            # We transform the long orange lines into the specific blue edges
+            self.play(
+                ReplacementTransform(construction_lines, cell_edges),
+                FadeOut(neighbor_lines),
+                run_time=0.7
+            )
+
+            if (i == 0): self.next_slide()
+            
+            # 3. Add to final group and reset dot
+            final_diagram.add(cell_edges)
+            self.play(current_dot.animate.set_color(YELLOW).scale(1/1.5), run_time=0.2)
+            
+            # Optional: Pause briefly after each cell
+            # self.wait(0.2) 
+
+        # --- 3. Final Polish ---
+        self.add(final_diagram)
+        
+        # Highlight the center polygon
+        center_region_idx = vor.point_region[4]
+        region_indices = vor.regions[center_region_idx]
+        if -1 not in region_indices and len(region_indices) > 0:
+             poly_points = [np.array([vor.vertices[i][0], vor.vertices[i][1], 0]) for i in region_indices]
+             center_poly = Polygon(*poly_points, color=BLUE, fill_color=BLUE, fill_opacity=0.2)
+             self.play(FadeIn(center_poly))
+
+        final_text = Tex(r"The complete \textbf{Voronoi Diagram}", font_size=36).to_edge(DOWN)
+        self.play(Write(final_text))
+        
         self.next_slide()
         
-        self.play(FadeOut(title), FadeOut(site_dots), FadeOut(voronoi_lines), FadeOut(delaunay_lines), FadeOut(dual_text))
-
+        # Cleanup
+        self.play(
+            FadeOut(site_dots), 
+            FadeOut(final_diagram), 
+            FadeOut(final_text),
+            FadeOut(center_poly) if 'center_poly' in locals() else Wait(0)
+        )
 
 # --- SCENE 2: FORTUNE'S ALGORITHM BASICS ---
 class FortuneBasic(Slide):
