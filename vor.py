@@ -18,6 +18,73 @@ class VoronoiIntro(Slide):
 
         self.play(FadeOut(title), FadeOut(def_text))
 
+        # --- Simple Bisector Example ---
+        p1 = np.array([-2, 0.25, 0])
+        p2 = np.array([2, -0.25, 0])
+        dot1 = Dot(p1, color=YELLOW)
+        dot2 = Dot(p2, color=YELLOW)
+
+        # Draw the points
+        self.play(GrowFromCenter(dot1), GrowFromCenter(dot2))
+        
+        # Draw perpendicular bisector
+        midpoint = (p1 + p2) / 2
+        tangent = p2 - p1
+        normal = np.array([-tangent[1], tangent[0], 0], dtype=float)
+        normal /= np.linalg.norm(normal)
+        bisector_line = Line(midpoint - normal*3, midpoint + normal*3, color=ORANGE, stroke_width=3)
+        
+        self.play(Create(bisector_line))
+        
+        # Moving point that shows distance comparison
+        test_point = Dot([-3, 1, 0], color=WHITE)
+        self.add(test_point)
+
+        # Lines from test point to the two sites
+        line1 = always_redraw(lambda: Line(test_point.get_center(), dot1.get_center(), color=BLUE))
+        line2 = always_redraw(lambda: Line(test_point.get_center(), dot2.get_center(), color=GREEN))
+
+        self.add(line1, line2)
+
+        # Distance labels
+        dist_label1 = always_redraw(lambda: Tex(
+            f"{np.linalg.norm(test_point.get_center() - dot1.get_center()):.2f}"
+        ).next_to((test_point.get_center() + dot1.get_center())/2, UP))
+        
+        dist_label2 = always_redraw(lambda: Tex(
+            f"{np.linalg.norm(test_point.get_center() - dot2.get_center()):.2f}"
+        ).next_to((test_point.get_center() + dot2.get_center())/2, UP))
+
+        self.add(dist_label1, dist_label2)
+
+        # Color test point based on which site it's closer to
+        def update_color(mob):
+            d1 = np.linalg.norm(mob.get_center() - dot1.get_center())
+            d2 = np.linalg.norm(mob.get_center() - dot2.get_center())
+            mob.set_color(BLUE if d1 < d2 else GREEN)
+        test_point.add_updater(update_color)
+
+        # Animate the test point moving around
+        self.play(test_point.animate.move_to([1, 2, 0]), run_time=2)
+        self.wait(2)
+        self.play(test_point.animate.move_to([-1, -1, 0]), run_time=2)
+        self.wait(2)
+        self.play(test_point.animate.move_to(midpoint), run_time=2)
+        self.next_slide()
+
+        # Fade everything out
+        self.play(
+            FadeOut(dot1), FadeOut(dot2), 
+            FadeOut(bisector_line),
+            FadeOut(test_point),
+            FadeOut(line1),
+            FadeOut(line2),
+            FadeOut(dist_label1),
+            FadeOut(dist_label2),
+        )
+
+        self.next_slide()
+
         
         # Define sites
         sites_coords = [[-3, -1, 0], [-1, 2, 0], [2, 1, 0], [3, -2, 0], [0, 0, 0]]
