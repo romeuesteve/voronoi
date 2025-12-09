@@ -5,7 +5,10 @@ Voronoi Diagram and Fortune's algorithm presentation for the GEOC Course (25-26 
 ---
 
 ## Video
-
+<video width="800" controls>
+  <source src="video.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Usage
 
