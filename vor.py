@@ -620,3 +620,65 @@ class FortuneEvents(Slide):
         
         self.wait()
         self.play(FadeOut(final_text), FadeOut(title))
+
+
+# --- COMPLEXITY ---
+class ComplexityAnalysis(Slide):
+    def construct(self):
+        title = Title("Why $O(N \log N)$?")
+        self.play(Write(title))
+        self.wait(0.5)
+
+        # Main explanation centered on the key data structures
+        explanation = VGroup(
+            Text("Fortune's algorithm achieves optimal complexity", font_size=36, color=YELLOW),
+            MathTex(r"\text{Complexity: } O(N \log N)", font_size=60, color=GREEN)
+        ).arrange(DOWN, buff=0.8).next_to(title, DOWN, buff=0.5)
+        
+        self.play(Write(explanation))
+        self.next_slide()
+
+        # --- Breakdown Table ---
+        
+        # 1. Event Queue (Priority Queue)
+        eq_title = Text("1. Event Queue (Q)", font_size=32, color=BLUE)
+        eq_desc = VGroup(
+            Tex(r"$\bullet$ Stores all future $\textbf{Site}$ and $\textbf{Circle}$ Events.", font_size=28),
+            Tex(r"$\bullet$ Used to efficiently find the next event in time (Y-coordinate).", font_size=28),
+            Tex(r"$\bullet$ Operations (Insert/Extract Min) take $O(\log N)$.", font_size=28),
+        ).arrange(DOWN, center=False, aligned_edge=LEFT, buff=0.3).next_to(eq_title, DOWN, buff=0.3).shift(RIGHT*0.5)
+
+        # 2. Beach Line Structure (Balanced Binary Tree)
+        bl_title = Text("2. Beach Line Structure (T)", font_size=32, color=BLUE).next_to(eq_desc, DOWN, buff=0.8).align_to(eq_title, LEFT)
+        bl_desc = VGroup(
+            Tex(r"$\bullet$ Stores the sequence of $\textbf{Parabolic Arcs}$ (The beach line).", font_size=28),
+            Tex(r"$\bullet$ Used to find where a new site lands or where an arc disappears.", font_size=28),
+            Tex(r"$\bullet$ Operations (Search/Insert/Delete Arc) take $O(\log N)$.", font_size=28),
+        ).arrange(DOWN, center=False, aligned_edge=LEFT, buff=0.3).next_to(bl_title, DOWN, buff=0.3).shift(RIGHT*0.5)
+
+        # Group all breakdown elements
+        breakdown = VGroup(eq_title, eq_desc, bl_title, bl_desc).move_to(DOWN*0.5).to_edge(LEFT, buff=0.5)
+        
+        # Animate the transition
+        self.play(
+            FadeOut(explanation),
+            FadeIn(breakdown),
+        )
+
+        # Final Calculation
+        final_calc = VGroup(
+            Text("Conclusion:", font_size=36, color=YELLOW),
+            MathTex(r"\text{Total Events } (N) \times \text{Cost per Event } (O(\log N))", font_size=40),
+            MathTex(r"\Rightarrow \text{Total Time: } O(N \log N)", font_size=50, color=GREEN)
+        ).arrange(DOWN, buff=0.3).to_edge(RIGHT).shift(DOWN*0.5)
+
+        self.next_slide()
+        
+        self.play(
+            FadeIn(final_calc, shift=LEFT),
+            breakdown.animate.shift(LEFT*2)
+        )
+        self.wait(5)
+        
+        # Cleanup
+        self.play(FadeOut(VGroup(title, breakdown, final_calc)))
